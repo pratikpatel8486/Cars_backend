@@ -22,7 +22,7 @@ class LoginController extends Controller
     //             return $this->sendError(Lang::get("auth.require_email_password", array(), $this->selected_language), json_decode("{}"), 201);
     //         }
     //        $hasher = app()->make('hash');
-    //        dd($hasher);
+    //     //    dd($hasher);
     //         $login = User::where('email', $email)->first();
     //         if (!$login) {
     //             return $this->sendError(Lang::get("auth.invalid_login", array(), $this->selected_language), json_decode("{}"), 201);
@@ -79,13 +79,40 @@ class LoginController extends Controller
                if($login_true){
                 return response()->json(['success' => 'true', 'messae' => 'Login successfully']);
                }else{
-                return response()->json(['success' => 'false', 'messae' => 'invalid_login']);
+                //return response()->json(['success' => 'false', 'messae' => 'invalid_login']);
+                return $this->sendError("invalid_login", array(''), 400);
                }
              
             }
         } else {
             return response()->json(['success' => 'false', 'messae' => 'Request invalid']);
            // return $this->sendError(Lang::get("common.request_invalid", array(), ''), json_decode("{}"), 400);
+        }
+    }
+
+    public function add_car(Request $request){
+        $requestData = $request->json()->all();
+        if (count($requestData) > 0) {
+            $validator =  Validator::make($requestData, [
+                'brand' => 'required',
+                'modal' => 'required',
+                'variant' => 'required',
+                'make_year' => 'required',
+                'reg_year' => 'required',
+                'fuel_type' => 'required',
+                'ownership' => 'required',
+                'kms' => 'required',
+                'rto' => 'required',
+                'transmission' => 'required',
+                'insurance' => 'required',
+                'insurance_date' => 'required',
+                'color' => 'required',
+            ]);
+
+            if ($validator->fails()) {
+                $error = $validator->errors()->first();
+                return $this->sendError($error, null, 400);
+            }
         }
     }
 }
