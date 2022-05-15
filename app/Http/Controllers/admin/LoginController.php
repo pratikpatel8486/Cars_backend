@@ -4,10 +4,12 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Car;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Validator;
 
 class LoginController extends Controller
 {
@@ -112,6 +114,43 @@ class LoginController extends Controller
             if ($validator->fails()) {
                 $error = $validator->errors()->first();
                 return $this->sendError($error, null, 400);
+            }
+
+            $brand = $requestData['brand'];
+            $modal = $requestData['modal'];
+            $variant = $requestData['variant'];
+            $make_year = $requestData['make_year'];
+            $reg_year = $requestData['reg_year'];
+            $fuel_type = $requestData['fuel_type'];
+            $ownership = $requestData['ownership'];
+            $kms = $requestData['kms'];
+            $rto = $requestData['rto'];
+            $transmission = $requestData['transmission'];
+            $insurance = $requestData['insurance'];
+            $insurance_date = $requestData['insurance_date'];
+            $color = $requestData['color'];
+
+
+            $car = new Car;
+            $car->brand = $brand;
+            $car->modal = $modal;
+            $car->variant = $variant;
+            $car->make_year = $make_year;
+            $car->reg_year = $reg_year;
+            $car->fuel_type = $fuel_type;
+            $car->ownership = $ownership;
+            $car->kms = $kms;
+            $car->rto = $rto;
+            $car->transmission = $transmission;
+            $car->insurance = $insurance;
+            $car->insurance_date = $insurance_date;
+            $car->color = $color;
+            $car->save();
+
+            if (!empty($car)) {
+                return $this->sendResponse($car, Lang::get("success", array(), ''), 200);
+            }else{
+                return $this->sendError(Lang::get("Car not added", array(), ''), json_decode("{}"), 201);
             }
         }
     }
