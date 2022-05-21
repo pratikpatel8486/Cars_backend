@@ -4,7 +4,8 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
-
+error_reporting(E_ALL);
+ini_set('display_errors', true);
 /*
 |--------------------------------------------------------------------------
 | Check If The Application Is Under Maintenance

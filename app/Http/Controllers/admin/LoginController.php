@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
-
+use Tymon\JWTAuth\Exceptions\JWTException;
+use JWTAuth;
 class LoginController extends Controller
 {
     // public function AdminLogin(Request $request)
@@ -58,7 +59,7 @@ class LoginController extends Controller
     // }
 
 
-    public function AdminLogin(Request $request)
+    /*public function AdminLogin(Request $request)
     {
         $requestData = $request->json()->all();
         if (count($requestData) > 0) {
@@ -90,7 +91,7 @@ class LoginController extends Controller
             return response()->json(['success' => 'false', 'messae' => 'Request invalid']);
            // return $this->sendError(Lang::get("common.request_invalid", array(), ''), json_decode("{}"), 400);
         }
-    }
+    }*/
 
     public function add_car(Request $request){
         $requestData = $request->json()->all();
@@ -153,5 +154,61 @@ class LoginController extends Controller
                 return $this->sendError(Lang::get("Car not added", array(), ''), json_decode("{}"), 201);
             }
         }
+    }
+    public function AdminRegister(Request $request)
+    {
+        $data = $request->only('name', 'email', 'password');
+        $validator = Validator::make($data, [
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|string|min:6|max:50'
+        ]);
+        if($validator->fails()){
+            return response()->json($validator->errors(), 401);       
+        }
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password)
+        ]); 
+        return response()->json([
+            'status' => true,
+            'message' => 'Account registered successfully.', 
+            'data' => $user
+        ]);
+    }
+    public function AdminLogin(Request $request)
+    {
+        $credentials = $request->only('email', 'password');
+        $validator = Validator::make($credentials, [
+            'email' => 'required|email',
+            'password' => 'required|string|min:6|max:50'
+        ]);
+        if($validator->fails()){
+            return response()->json($validator->errors(), 401);       
+        }
+        try {
+            if (! $token = JWTAuth::attempt($credentials)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Login credentials are invalid.',
+                ], 400);
+            }
+        } catch (JWTException $e) {
+        return $credentials;
+            return response()->json([
+                    'success' => false,
+                    'message' => 'Could not create token.',
+                ], 500);
+        }
+        $user = Auth::user();
+        //Token created, return with success response and jwt token
+        return response()->json([
+            'success' => true,
+            'message' => 'Login successfully',
+            'data' => $user,
+            'token' => $token,
+            'type' => 'bearer'
+        ]);
     }
 }
